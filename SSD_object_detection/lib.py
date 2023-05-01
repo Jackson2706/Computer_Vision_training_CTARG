@@ -5,6 +5,7 @@ from xml.etree import ElementTree as ET
 import cv2
 import torch.utils.data as data
 import torch
+import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 
