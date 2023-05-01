@@ -39,6 +39,18 @@ class MyDataset(data.Dataset):
 
         return img, gt, height, width
     
+def my_collate_fn(batch):
+    targets = []
+    imgs = []
+
+    for sample in batch:
+        imgs.append(sample[0])  #sample[0] = img
+        targets.append(torch.FloatTensor(sample[1])) #sample[1] = annotation
+    
+    imgs = torch.stack(imgs, dim=0)
+
+    return imgs, targets
+
 
 if __name__ == "__main__":
     classes = [
@@ -56,6 +68,22 @@ if __name__ == "__main__":
 
     train_dataset = MyDataset(train_img_list, train_annotation_list, phase="train",
                               tranform=DataTransform(input_size=input_size, color_mean=color_mean), anno_xml= Anno_xml(classes=classes))
+    val_dataset = MyDataset(val_img_list,val_annotation_list, phase='val', 
+                            tranform=DataTransform(input_size=input_size, color_mean=color_mean), anno_xml=Anno_xml(classes=classes))
     
-    print(len(train_dataset))
-    print(train_dataset.__getitem__(1))
+    # print(len(train_dataset))   
+    # print(train_dataset.__getitem__(1))
+    batch_size = 4
+    train_data_loader = data.DataLoader(train_dataset, batch_size=batch_size,shuffle=True, collate_fn=my_collate_fn)
+    val_data_loader = data.DataLoader(val_dataset, batch_size=batch_size, shuffle=False, collate_fn=my_collate_fn)
+
+    dataloader_dict = {
+        "train": train_data_loader,
+        "val": val_data_loader
+    }
+
+    batch_iter = iter(dataloader_dict["val"])
+    images, targets = next(batch_iter)
+    print(images.size())
+    print(len(targets))
+    print(targets[0].size())
