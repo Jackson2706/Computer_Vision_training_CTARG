@@ -6,6 +6,7 @@ import cv2
 import torch.utils.data as data
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 torch.manual_seed(1234)
