@@ -3,7 +3,7 @@ from torchvision import transforms
 import cv2
 import numpy as np
 import types
-from numpy import random
+import numpy.random as random
 
 
 def intersect(box_a, box_b):
@@ -236,7 +236,6 @@ class RandomSampleCrop(object):
         while True:
             # randomly choose a mode
             mode = random.choice(self.sample_options)
-            print(mode)
             if mode is None:
                 return image, boxes, labels
 

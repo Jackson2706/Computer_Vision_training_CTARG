@@ -14,7 +14,7 @@ class DataTransform:
                 ToAbsoluteCoords(),
                 PhotometricDistort(),
                 Expand(color_mean),
-                RandomSampleCrop(), 
+                # RandomSampleCrop(), 
                 RandomMirror(),
                 ToPercentCoords(),
                 Resize(input_size),
@@ -62,9 +62,9 @@ if __name__ == "__main__":
     input_size = 300
     phase = "train"
     transform = DataTransform(input_size=input_size, color_mean=color_mean)
-    img_tranformed, boxes, labels = transform(img=img, phase=phase, boxes=annotation_infor[:,:4], labels=annotation_infor[:, 4])
-    plt.imshow(cv2.cvtColor(img_tranformed, cv2.COLOR_BGR2RGB))
-    plt.show()
+    # img_tranformed, boxes, labels = transform(img=img, phase=phase, boxes=annotation_infor[:,:4], labels=annotation_infor[:, 4])
+    # plt.imshow(cv2.cvtColor(img_tranformed, cv2.COLOR_BGR2RGB))
+    # plt.show()
 
     #tranform image, phase val
     phase = "val"
