@@ -1,5 +1,6 @@
 from lib import *
-
+from L2_norm import L2Norm
+from default_box import DefBox
 def create_vgg():
     layers = []
     in_channel = 3
@@ -84,11 +85,62 @@ def create_loc_conf(num_classes = 21, bbox_ratio_num=[4, 6, 6, 6, 4, 4]):
     conf_layer += [nn.Conv2d(in_channels=256, out_channels=bbox_ratio_num[3]*num_classes, kernel_size=3, padding=1)]
 
     return nn.ModuleList(loc_layer), nn.ModuleList(conf_layer)
+
+cfg = {
+    "num_classes": 21, #VOC data include 20 class + 1 background class
+    "input_size": 300, #SSD300
+    "bbox_aspect_num": [4, 6, 6, 6, 4, 4], # Tỷ lệ khung hình cho source1->source6`
+    "feature_maps": [38, 19, 10, 5, 3, 1],
+    "steps": [8, 16, 32, 64, 100, 300], # Size of default box
+    "min_size": [30, 60, 111, 162, 213, 264], # Size of default box
+    "max_size": [60, 111, 162, 213, 264, 315], # Size of default box
+    "aspect_ratios": [[2], [2,3], [2,3], [2,3], [2], [2]]
+}
+
+class SSD(nn.Module):
+    def __init__(self, phase, cfg):
+        super(SSD, self).__init__()
+        self.phase = phase
+        self.num_classes = cfg["num_classes"]
+
+        # main module
+        self.vgg = create_vgg()
+        self.extras = extra()
+        self.loc, self.conf = create_loc_conf(cfg["num_classes"], cfg["bbox_aspect_num"])
+        self.L2Norm = L2Norm()
+
+        # default boxes
+        dbox = DefBox(cfg=cfg)
+        self.dbox_list = dbox.create_defbox()
+
+        if phase == "inference":
+            self.detect = Detect()
+    
+def decode(loc, defbox_list):
+    """
+    parameters:
+        loc : [8732, 4] (delta_x, delta_y, delta_w, delta_h)
+        defbox_list = [8732, 4] (cx_d, cy_d, w_d, h_d)
+    returns:
+        Boxes: [xmin, ymin, xmax, ymax]
+    """
+
+    boxes = torch.cat((defbox_list[:, :2] + 0.1*loc[:, :2]*defbox_list[:, :2],
+                       defbox_list[:, 2:] * torch.exp(loc[:,2:]*0.2)), dim=1)
+    
+    boxes[:, :2] -= boxes[:, 2:]/2  # calculate xmin, ymin
+    boxes[:, 2:] += boxes[:, :2]  # calculate xmax, ymax
+
+    return boxes
+
 if __name__ == "__main__":
-    vgg = create_vgg()
-    loc, conf = create_loc_conf()
-    extras = extra()
-    print(conf)
+    # vgg = create_vgg()
+    # loc, conf = create_loc_conf()
+    # extras = extra()
+    # print(conf)
+
+    ssd = SSD(phase="train", cfg=cfg)
+    print(ssd)
 
 
 
