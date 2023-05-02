@@ -6,6 +6,7 @@ import cv2
 import torch.utils.data as data
 import torch
 import torch.nn as nn
+from torch.autograd import Function
 import numpy as np
 import matplotlib.pyplot as plt
 from math import sqrt
