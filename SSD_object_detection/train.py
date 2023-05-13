@@ -15,7 +15,7 @@ from multiboxloss import MultiBoxLoss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device:", device)
-torch.backends.cudnn.benchmark = True
+# torch.backends.cudnn.benchmark = True
 
 # dataloader
 root_path = "./data/VOCdevkit/VOC2012"
@@ -33,7 +33,7 @@ input_size = 300
 train_dataset = MyDataset(train_img_list, train_anno_list, phase="train", transform=DataTransform(input_size, color_mean), anno_xml=Anno_xml(classes))
 val_dataset = MyDataset(val_img_list, val_anno_list, phase="val", transform=DataTransform(input_size, color_mean), anno_xml=Anno_xml(classes))
 
-batch_size = 4
+batch_size = 1
 train_dataloader = data.DataLoader(train_dataset, batch_size, shuffle=True, collate_fn=my_collate_fn)
 val_dataloader = data.DataLoader(val_dataset, batch_size, shuffle=False, collate_fn=my_collate_fn)
 dataloader_dict = {"train": train_dataloader, "val": val_dataloader}
@@ -91,7 +91,7 @@ def train_model(net, dataloader_dict, criterion, optimizer, num_epochs):
                 net.train()
                 print("(Training)")
             else:
-                if (epoch+1) % 10 == 0:
+                if (epoch+1) % 2 == 0:
                     net.eval() 
                     print("---"*10)
                     print("(Validation)")
@@ -138,5 +138,5 @@ def train_model(net, dataloader_dict, criterion, optimizer, num_epochs):
         if ((epoch+1) % 10 == 0):
             torch.save(net.state_dict(), "./data/weights/ssd300_" + str(epoch+1) + ".pth")
 
-num_epochs = 100
+num_epochs = 10
 train_model(net, dataloader_dict, criterion, optimizer, num_epochs=num_epochs)
